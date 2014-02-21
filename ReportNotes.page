@@ -1,0 +1,356 @@
+<apex:page controller="ReportNotesExt" showHeader="true">
+
+<apex:includeScript value="{!URLFOR($Resource.jquery_ui, 'jquery-ui-1.10.4.custom/js/jquery-1.10.2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.jquery_ui, 'jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.jquery_ui,'jquery-ui-1.10.4.custom/development-bundle/themes/smoothness/jquery-ui.css')}"/>
+
+<apex:includeScript value="{!URLFOR($Resource.select2, 'select2-3.4.5/select2.js')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.select2, 'select2-3.4.5/select2.css')}"/>
+
+<script type="text/javascript">
+if (typeof jQuery != 'undefined') {
+ 
+    alert("jQuery library is loaded!");
+ 
+}else{
+ 
+    alert("jQuery library is not found!");
+ 
+}
+</script>
+
+<script type="text/javascript" language="javascript">
+  var j$ = jQuery.noConflict();
+  j$(document).ready(function(){   
+  j$('.SelOpt').select2({dropdownAutoWidth : true});
+  j$('.FilSelOpt').select2({dropdownAutoWidth : true});
+  
+});
+</script>
+
+<script type="text/javascript" language="javascript">
+var k$ = jQuery.noConflict();
+k$(document).ready(function(){ 
+   //k$('.datepick').datepicker();
+    k$( "#start_date" ).datepicker({
+                    defaultDate: "+1w",
+                    changeMonth: true,
+                    changeYear: true,
+                    numberOfMonths: 1,
+                    dateFormat:"mm/dd/yy",
+                    altFormat: "yy-mm-dd",
+                    showAnim: "clip"
+                })
+
+   //k$('.DatePicky').datepicker("show");
+});
+</script>
+
+    <script type="text/javascript">
+    window.onload = function()
+        {
+            focus('{!$Component.mainPage.mainForm.SelTypeVal}');     
+        }
+    function GetSelectedValue(oCurrent,oInputHidden)
+    {
+        document.getElementById(oInputHidden).value = oCurrent.value;
+        alert(oCurrent.value);
+    }
+     function focus(id){
+        document.getElementById(id).focus();
+    }
+    </script>
+           
+  <apex:form >
+  <apex:pageBlock id="HeadingBlock">
+        <apex:pageMessages />
+          <div style="font-weight:Bold;font-size:15px;">
+          <apex:pageBlockSection title="Notes and Attachments" collapsible="false" />
+       </div>
+   <!-- <apex:outputText value="Notes and Attachments" style="font-weight:Bold;font-size:15px"> </apex:outputText>  -->
+   </apex:pageBlock>
+      
+    <apex:inputHidden value="{!sSelecetdObjName}" id="SelObjVal" />
+    <apex:inputHidden value="{!sSelectedType}" id="SelTypeVal"/>
+    <apex:inputHidden value="{!sSelDate}" id="hf_SelDate"/>
+       <apex:pageblock id="TheBlock">
+        <apex:selectRadio value="{!SelectedType}" onclick="GetSelectedValue(this,'{!$Component.SelTypeVal}')" style="Align:left" required="true">
+            <apex:selectOptions value="{!SelectType}"/>
+        </apex:selectRadio>
+       <div style="position:relative;left:15px;">
+       <apex:outputText value="Object Type " id="TheObject"/>
+       <apex:outputPanel styleClass="requiredInput" layout="block"> 
+       <apex:outputPanel styleClass="requiredBlock" layout="block"/>
+
+       <apex:selectList value="{!SelectedObject}" multiselect="false" size="1" onchange="GetSelectedValue(this,'{!$Component.SelObjVal}')" styleClass="SelOpt" required="true">
+        <apex:selectOptions value="{!SelObject}"/>
+       </apex:selectList>
+        </apex:outputPanel> 
+        </div>
+
+        <br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <apex:outputLabel value="Filter Criteria"></apex:outputLabel>
+        
+        <hr />
+
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        <apex:outputText value="Created Date" id="TheDate"/>
+
+        
+        &nbsp;&nbsp;&nbsp;
+         <apex:selectList value="{!selectedCriteria}" multiselect="false" size="1" styleClass="FilSelOpt">
+            <apex:selectOption itemvalue=">" itemlabel=">"/>
+            <apex:selectOption itemvalue="<" itemlabel="<"/>
+            <apex:selectOption itemvalue="=" itemlabel="="/>
+            <apex:selectOption itemvalue=">=" itemlabel=">="/>
+            <apex:selectOption itemvalue="<=" itemlabel="<="/>
+        </apex:selectList>
+        &nbsp;&nbsp;
+        <input type="text" name="start_date" id="start_date" onchange="GetSelectedValue(this,'{!$Component.hf_SelDate}')" />
+        <!--<apex:inputField value="{!proxyobject.CreatedDate__c}"/> -->
+        <img src="/s.gif" alt="Help" class="helpIcon" title="Blank date will push the entire object data"/>
+        
+     <!--   </apex:pageBlock>
+        <apex:pageBlock > -->
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <apex:inputCheckbox value="{!DeleteFirst}"/>
+        &nbsp;
+        <apex:outputText value="Delete all data before Push"/>
+        <p/>
+        <apex:actionStatus id="counterStatus">
+        <apex:facet name="start">
+            <img class="loader" src="/img/loading32.gif" width="50" height="50" />
+        </apex:facet>
+            
+        </apex:actionStatus>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <apex:commandButton status="counterStatus" value="Display Selected Data" action="{!GetSelectedListValue}" reRender="DataTableOuterContainer,mybuttonsOuter,HeadingBlock" style="background:#E6E6FA"/>
+        &nbsp;&nbsp;&nbsp;
+         <apex:actionStatus id="counterStatuspush">
+        <apex:facet name="start">
+            <img class="loader" src="/img/loading32.gif" width="50" height="50" />
+        </apex:facet> 
+        </apex:actionStatus>
+        <apex:commandButton status="counterStatuspush" value="Push Selected Data" action="{!PushSelectedListValue}" reRender="TheBlock,mybuttonsOuter" style="background:#E6E6FA"/> 
+        &nbsp;&nbsp;&nbsp;
+        <!-- <apex:outputText value="******To push entire object data dont select any date******" style="font-weight:Bold;font-size:15px;color:Red"> </apex:outputText> -->
+        <br/>
+        <br/>
+     </apex:pageBlock>
+        <apex:pageBlock >
+    <apex:pageBlockButtons location="bottom">
+    <apex:outputPanel id="mybuttonsOuter">
+   <apex:outputPanel id="myButtons" rendered="{!showArrows}">
+        <apex:commandButton action="{!first}" title="First" value="<<" disabled="{!DisablePrevious}" reRender="DataTableOuterContainer,mybuttonsOuter" style="background:#FFF68F"/>
+        <apex:commandButton action="{!Previous}" title="Previous" value="<" disabled="{!DisablePrevious}" reRender="DataTableOuterContainer,mybuttonsOuter" style="background:#FFF68F"/>        
+        <apex:commandButton action="{!Next}" title="Next" value=">" disabled="{!DisableNext}" reRender="DataTableOuterContainer,mybuttonsOuter" style="background:#FFF68F"/>
+        <apex:commandButton action="{!Last}" title="Last" value=">>" disabled="{!DisableNext}" reRender="DataTableOuterContainer,mybuttonsOuter" style="background:#FFF68F"/>        
+   </apex:outputPanel>
+    </apex:outputPanel>    
+   </apex:pageBlockButtons>
+        <style type="text/css"> 
+        .loader{z-index: 10009;position: fixed;margin-left: -60px;-moz-opacity: 0.70;top: 25%;left: 50%;}
+        .RadioAlign {text-align:left;}
+        </style>
+    <apex:outputPanel id="DataTableOuterContainer">
+ 
+    <style>
+     .bPageBlock { background-color: #00000 !important;}
+    </style>
+    <style>
+    .chosen-container { width: 220px !important; }
+    </style>
+
+    <style type="text/css" >
+.sorting {
+    background: #f2f3f3 url('{! URLFOR($Resource.jQueryDataTablesZip, 'images/sort_both.png') }') no-repeat center right !important;
+    padding-right: 20px !important;
+}
+.sorting_asc {
+    background: #f2f3f3 url('{! URLFOR($Resource.jQueryDataTablesZip, 'images/sort_asc.png') }') no-repeat center right !important;
+    padding-right: 20px !important;
+}
+.sorting_desc {
+    background: #f2f3f3 url('{! URLFOR($Resource.jQueryDataTablesZip, 'images/sort_desc.png') }') no-repeat center right !important;
+    padding-right: 20px !important;
+}
+.sorting_asc_disabled {
+    background: #f2f3f3 url('{! URLFOR($Resource.jQueryDataTablesZip, 'images/sort_asc_disabled.png') }') no-repeat center right !important;
+    padding-right: 20px !important;
+}
+.sorting_desc_disabled {
+    background: #f2f3f3 url('{! URLFOR($Resource.jQueryDataTablesZip, 'images/sort_desc_disabled.png') }') no-repeat center right !important;
+    padding-right: 20px !important;
+}
+table.dataTable tr.odd { background-color: white; }
+table.dataTable tr.even { background-color: white; }
+table.dataTable tr.odd td.sorting_1 { background-color: white; }
+table.dataTable tr.odd td.sorting_2 { background-color: white; }
+table.dataTable tr.odd td.sorting_3 { background-color: white; }
+table.dataTable tr.even td.sorting_1 { background-color: white; }
+table.dataTable tr.even td.sorting_2 { background-color: white; }
+table.dataTable tr.even td.sorting_3 { background-color: white; }
+.dataTables_length, .dataTables_filte,  .dataTables_info, .dataTables_paginater {
+    padding: 3px;
+}
+
+ 
+/*
+  Hide radio button (the round disc)
+  we will use just the label to create pushbutton effect
+*/
+input[type=radio] {
+    display:none;
+    margin:10px;
+    
+}
+ 
+/*
+  Change the look'n'feel of labels (which are adjacent to radiobuttons).
+  Add some margin, padding to label
+*/
+input[type=radio] + label {
+    display:inherit;
+    margin:-2px;
+    padding: 4px 12px;
+    background-color: #ddd;
+    border-color: #ddd;
+    
+}
+/*
+ Change background color for label next to checked radio button
+ to make it look like highlighted button
+*/
+input[type=radio]:checked + label {
+    background-image: none;
+    background-color:#a7d3ff;
+}
+
+
+.styled-select {
+   
+   width: 250px;
+   overflow: hidden;
+   background: no-repeat right #ddd;
+   border: 0px solid #FFF;
+   
+   }
+   
+ .styled-select select {
+   /*  
+   width: 240px;
+   overflow: hidden;
+   background: no-repeat right #ddd;
+   border: 1px solid #ccc;
+   background:transparent;
+   */
+   border: 0 !important;.  /*Removes border*/
+   -webkit-appearance: none;  /*Removes default chrome and safari style*/
+   -moz-appearance: none;  /*Removes default style Firefox*/
+   }
+   
+ .styled-select hover {
+    background: black;
+}
+
+   
+.styled-select-val {
+   overflow: hidden;
+   background: url(new_arrow.png) no-repeat right #ddd;
+   border: 1px solid #ccc;
+   
+   }
+   
+  
+
+</style>
+
+<script type="text/javascript" language="javascript" src="{!URLFOR($Resource.jQueryDataTablesZip, 'js/jquery.js')}"></script>
+
+<script type="text/javascript" language="javascript" src="{!URLFOR($Resource.jQueryDataTablesZip, 'js/jquery.dataTables.js')}"></script>
+
+<script type="text/javascript" language="javascript">
+var i$ = jQuery.noConflict();
+i$('table.dataTable').dataTable({
+sPaginationType: "full_numbers",
+"sDom": 'frt'
+    
+});
+
+</script>
+ <!--       <apex:outputPanel id="DataTableinnerContainerAttach" rendered="{!showAttachTable}">
+        <apex:pageBlockTable value="{!AttachmentTable}" var="Attach" id="theAttachTable" rowClasses="odd,even"
+
+                        styleClass="dataTable" border="2">
+
+        <apex:facet name="caption">Attachment Details</apex:facet>
+        
+        <apex:column >
+            <apex:facet name="header">Name</apex:facet>
+            <apex:outputText value="{!Attach.name}"/>
+            
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Owner</apex:facet>
+            <apex:outputText value="{!Attach.OwnerId}"/>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Parent Type</apex:facet>
+            <apex:outputText value="{!Attach.Parent.Type}"/>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Created Date</apex:facet>
+            <apex:outputText value="{!Attach.CreatedDate}"/>
+        </apex:column>
+    </apex:pageBlockTable>
+    <apex:outputText value="Showing Page # {!pageNumber} of {!totalPages}"></apex:outputText>
+    </apex:outputPanel> -->
+
+    <apex:outputPanel id="DataTableinnerContainerAttach" rendered="{!showAttachTable}">
+       <apex:pageBlock >
+        <apex:pageBlockSection columns="1">
+        <apex:pageBlockTable value="{!AttachmentTable}" var="Attach" styleClass="dataTable">
+            <apex:column value="{!Attach.name}"/>
+            <apex:column value="{!Attach.OwnerId}"/>
+            <apex:column value="{!Attach.Parent.Type}"/>
+            <apex:column value="{!Attach.CreatedDate}"/>
+            </apex:pageBlockTable>
+    </apex:pageBlockSection>
+    </apex:pageBlock>
+     
+        
+       
+    <apex:outputText value="Showing Page # {!pageNumber} of {!totalPages}"></apex:outputText>
+    </apex:outputPanel>
+    <apex:outputPanel id="DataTableinnerContainerNote" rendered="{!showNoteTable}">
+        <apex:pageBlockTable value="{!NoteTable}" var="Note" id="theNoteTable" rowClasses="odd,even"
+
+                        styleClass="tableClass" border="2">
+
+        <apex:facet name="caption">Notes Details</apex:facet>
+        
+        <apex:column >
+            <apex:facet name="header">Name</apex:facet>
+            <apex:outputText value="{!Note.Title}"/>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Owner</apex:facet>
+            <apex:outputText value="{!Note.OwnerId}"/>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Parent Type</apex:facet>
+            <apex:outputText value="{!Note.Parent.Type}"/>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Created Date</apex:facet>
+            <apex:outputText value="{!Note.CreatedDate}"/>
+        </apex:column>
+    </apex:pageBlockTable>
+    <apex:outputText value="Showing Page # {!pageNumber} of {!totalPages}"></apex:outputText>
+    </apex:outputPanel>
+    </apex:outputPanel>
+    </apex:pageblock>
+  </apex:form>
+</apex:page>

@@ -40,10 +40,20 @@ Public String SelectedObject{get;set;}
                 List<String> SelObjectList = new List<String>();
         for(ObjectsToSelect__c ObjSelLoop : ObjSel_CS.values())
             SelObjectList.add(ObjSelLoop.Object_Name__c);
-        objToSel.add(new SelectOption('None','None'));
+		List<Schema.SObjectType> allObjects = Schema.getGlobalDescribe().Values();
+        
+		objToSel.add(new SelectOption('None','None'));
         for(String SelObjectLoop : SelObjectList)
         {
-            objToSel.add(new SelectOption(SelObjectLoop,SelObjectLoop));
+            //objToSel.add(new SelectOption(SelObjectLoop,SelObjectLoop));
+			for(Schema.SObjectType objName: allObjects){
+                system.debug('--- Object Name is '+ objName.getDescribe().getName());
+
+                if(SelObjectLoop == objName.getDescribe().getLabel()){
+                    //objToSel.add(new SelectOption(SelObjectLoop,SelObjectLoop));
+                    objToSel.add(new SelectOption(objName.getDescribe().getName(),objName.getDescribe().getName()));
+                }
+            }
         }
         return objToSel ;
     }
